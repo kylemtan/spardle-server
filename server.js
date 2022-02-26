@@ -2436,7 +2436,6 @@ io.on("connection", (socket) => {
     }
 
     io.in(currentRoom).emit("update users", users[currentRoom]);
-
     }
     console.log(socket.id + "has disconnected");
   });
