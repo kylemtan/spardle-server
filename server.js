@@ -2442,4 +2442,4 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(1337, () => console.log("Server is now up on port 1337"));
+server.listen(process.env.PORT || 1337, () => console.log("Server is now up on port 1337"));
