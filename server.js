@@ -2372,7 +2372,7 @@ io.on("connection", (socket) => {
 
   socket.on("start game", (roomName) => {
     console.log(roomName + " started");
-    if (users[roomName].length > 2) {
+    if (users[roomName] && users[roomName].length > 2) {
       socket.to(roomName).emit("not enough players", true);
     } else {
       activeRooms[roomName] = true;
