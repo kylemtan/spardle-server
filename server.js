@@ -9,8 +9,8 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    // origin: "http://localhost:3000",
-    origin: "https://spardle.com",
+    origin: "http://localhost:3000",
+    // origin: "https://spardle.com",
     methods: ["GET", "POST"],
   },
 });
@@ -2335,8 +2335,6 @@ let activeRooms = {
 
 let allUsers = {};
 
-let words = {};
-
 io.on("connection", (socket) => {
   socket.on("join", (player) => {
     if(activeRooms[player.room]){
@@ -2371,20 +2369,20 @@ io.on("connection", (socket) => {
   });
 
   socket.on("start game", (roomName) => {
-    console.log(roomName + " started");
-    if (users[roomName] && users[roomName].length > 2) {
+    console.log(roomName + "started");
+    if (users[roomName] && users[roomName].length < 2) {
       socket.to(roomName).emit("not enough players", true);
     } else {
       activeRooms[roomName] = true;
-      words[roomName] = [];
+      words = [];
       for (let i = 0; i < 20; i++) {
-        words[roomName].push(
+        words.push(
           {word: answers[Math.floor(Math.random() * answers.length)]}
         );
       }
     }
-    io.in(roomName).emit("send words", words[roomName]);
-    console.log(words[roomName]);
+    io.in(roomName).emit("send words", words);
+    console.log(words);
   });
 
   socket.on("game update", (object) => {
