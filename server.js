@@ -9,8 +9,8 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
-    // origin: "https://spardle.com",
+    // origin: "http://localhost:3000",
+    origin: "https://spardle.com",
     methods: ["GET", "POST"],
   },
 });
@@ -2329,16 +2329,14 @@ let answers = [
 
 let users = {};
 
-let activeRooms = {
-
-}
+let activeRooms = {};
 
 let allUsers = {};
 
 io.on("connection", (socket) => {
   socket.on("join", (player) => {
-    if(activeRooms[player.room]){
-      socket.emit("already started", true)
+    if (activeRooms[player.room]) {
+      socket.emit("already started", true);
       return;
     }
     let roomName = player.room;
@@ -2346,7 +2344,7 @@ io.on("connection", (socket) => {
     const user = {
       username: player.username,
       id: socket.id,
-      score: 0
+      score: 0,
     };
     objectKey = socket.id;
     allUsers[objectKey] = roomName;
@@ -2360,7 +2358,6 @@ io.on("connection", (socket) => {
         }
       });
       users[roomName] = uniqueChars;
-
     } else {
       users[roomName] = [user];
     }
@@ -2376,9 +2373,9 @@ io.on("connection", (socket) => {
       activeRooms[roomName] = true;
       words = [];
       for (let i = 0; i < 20; i++) {
-        words.push(
-          {word: answers[Math.floor(Math.random() * answers.length)]}
-        );
+        words.push({
+          word: answers[Math.floor(Math.random() * answers.length)],
+        });
       }
     }
     io.in(roomName).emit("send words", words);
@@ -2386,14 +2383,21 @@ io.on("connection", (socket) => {
   });
 
   socket.on("game update", (object) => {
-    for(let i = 0; i < users[object.room].length; i++){
-      if(users[object.room][i].id === socket.id){
-        if(object.correct){
-          users[object.room][i].score++; 
-          console.log("user found")
+    for (let i = 0; i < users[object.room].length; i++) {
+      if (users[object.room][i].id === socket.id) {
+        if (object.correct) {
+          users[object.room][i].score++;
+          io.in(object.room).emit("banner", {
+            username: users[object.room][i].username,
+            correct: true,
+        });
         } else {
-          if(users[object.room][i].score >= 1){
-            users[object.room][i].score--; 
+          if (users[object.room][i].score >= 1) {
+            users[object.room][i].score--;
+            io.in(object.room).emit("banner", {
+              username: users[object.room][i].username,
+              correct: false,
+            });
           }
         }
       }
@@ -2402,11 +2406,16 @@ io.on("connection", (socket) => {
         users[object.room] = [];
         activeRooms[object.room] = false;
         return;
-      } 
+      }
     }
-    console.log(users[object.room])
-      io.in(object.room).emit("update game users", (users[object.room]));
-    
+    console.log(users[object.room]);
+    io.in(object.room).emit("update game users", users[object.room]);
+  });
+
+  socket.on("end game", room => {
+    io.in(room).emit("end game", users[room]);
+    users[room] = [];
+    activeRooms[room] = false;
   });
 
   socket.on("leave", (room) => {
@@ -2425,18 +2434,20 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     currentKey = socket.id;
     currentRoom = allUsers[currentKey];
-    if(currentRoom !== undefined){
+    if (currentRoom !== undefined) {
       allUsers[currentKey] = undefined;
-    if (users[currentRoom] && users[currentRoom].length > 1) {
-      users[currentRoom].filter((u) => u.id !== socket.id);
-    } else {
-      users[currentRoom] = [];
-    }
+      if (users[currentRoom] && users[currentRoom].length > 1) {
+        users[currentRoom].filter((u) => u.id !== socket.id);
+      } else {
+        users[currentRoom] = [];
+      }
 
-    io.in(currentRoom).emit("update users", users[currentRoom]);
+      io.in(currentRoom).emit("update users", users[currentRoom]);
     }
     console.log(socket.id + "has disconnected");
   });
 });
 
-server.listen(process.env.PORT || 1337, () => console.log("Server is now up on port 1337"));
+server.listen(process.env.PORT || 1337, () =>
+  console.log("Server is now up on port 1337")
+);
