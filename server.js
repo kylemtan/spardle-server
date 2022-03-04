@@ -2427,6 +2427,7 @@ io.on("connection", (socket) => {
     } else {
       users[currentRoom] = [];
     }
+    console.log(socket.id + " has left " + room);
 
     // io.in(currentRoom).emit("update users", users[currentRoom]);
   });
