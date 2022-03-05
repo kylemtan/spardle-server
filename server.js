@@ -9,8 +9,8 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
-    // origin: "https://spardle.com",
+    // origin: "http://localhost:3000",
+    origin: "https://spardle.com",
     methods: ["GET", "POST"],
   },
 });
