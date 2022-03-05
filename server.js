@@ -9,8 +9,8 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    // origin: "http://localhost:3000",
-    origin: "https://spardle.com",
+    origin: "http://localhost:3000",
+    // origin: "https://spardle.com",
     methods: ["GET", "POST"],
   },
 });
@@ -2443,7 +2443,11 @@ io.on("connection", (socket) => {
         users[currentRoom] = [];
       }
 
-      io.in(currentRoom).emit("update users", users[currentRoom]);
+      if(activeRooms[currentRoom]){
+        io.in(currentRoom).emit("update game users", users[currentRoom]);
+      } else {
+        io.in(currentRoom).emit("update users", users[currentRoom]);
+      }
     }
     console.log(socket.id + "has disconnected");
   });
