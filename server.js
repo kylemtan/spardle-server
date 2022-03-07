@@ -9,8 +9,8 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    // origin: "http://localhost:3000",
-    origin: ["https://spardle.com", "https://spardle.netlify.app"],
+    origin: "http://localhost:3000",
+    // origin: ["https://spardle.com", "https://spardle.netlify.app"],
     methods: ["GET", "POST"],
   },
 });
@@ -2362,6 +2362,41 @@ io.on("connection", (socket) => {
       users[roomName] = [user];
     }
     socket.join(roomName);
+    io.in(roomName).emit("update users", users[roomName]);
+  });
+
+  socket.on("joinPublic", (username) => {
+    console.log(0);
+    let checkIfRoom = 1;
+    while(activeRooms["public" + checkIfRoom]){
+      checkIfRoom++;
+      console.log(1)
+    }
+    let roomName = "public" + checkIfRoom;
+    console.log(username + " joined " + roomName);
+    const user = {
+      username: username,
+      id: socket.id,
+      score: 0,
+    };
+    objectKey = socket.id;
+    allUsers[objectKey] = roomName;
+    if (users[roomName]) {
+      users[roomName].push(user);
+      //rid dupes
+      let uniqueChars = [];
+      users[roomName].forEach((c) => {
+        if (!uniqueChars.includes(c)) {
+          uniqueChars.push(c);
+        }
+      });
+      users[roomName] = uniqueChars;
+    } else {
+      users[roomName] = [user];
+    }
+    socket.join(roomName);
+    console.log(roomName);
+    io.in(roomName).emit("return roomname", roomName);
     io.in(roomName).emit("update users", users[roomName]);
   });
 
