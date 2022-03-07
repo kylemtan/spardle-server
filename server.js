@@ -2368,14 +2368,18 @@ io.on("connection", (socket) => {
   socket.on("joinPublic", (username) => {
     console.log(0);
     let checkIfRoom = 1;
+    let updatedUsername = username;
+    if(username === ""){
+      updatedUsername = "Guest"
+    }
     while(activeRooms["public" + checkIfRoom]){
       checkIfRoom++;
       console.log(1)
     }
     let roomName = "public" + checkIfRoom;
-    console.log(username + " joined " + roomName);
+    console.log(updatedUsername + " joined " + roomName);
     const user = {
-      username: username,
+      username: updatedUsername,
       id: socket.id,
       score: 0,
     };
